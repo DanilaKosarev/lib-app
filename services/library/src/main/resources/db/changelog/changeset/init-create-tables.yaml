@@ -1,0 +1,117 @@
+databaseChangeLog:
+  - changeSet:
+      id: initial-create-tables
+      author: Danila
+      changes:
+        - createTable:
+            tableName: person
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: age
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: password
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: role
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: book
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: title
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: author
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: year_of_production
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: taken_date
+                  type: date
+              - column:
+                  name: person_id
+                  type: int
+        - addForeignKeyConstraint:
+            baseTableName: book
+            baseColumnNames: person_id
+            constraintName: book_person_id_fkey
+            onDelete: SET NULL
+            referencedTableName: person
+            referencedColumnNames: id
+        - createTable:
+            tableName: review
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: score
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: comment
+                  type: varchar(255)
+              - column:
+                  name: person_id
+                  type: int
+              - column:
+                  name: book_id
+                  type: int
+        - addForeignKeyConstraint:
+            baseTableName: review
+            baseColumnNames: person_id
+            constraintName: review_person_id_fkey
+            onDelete: CASCADE
+            referencedTableName: person
+            referencedColumnNames: id
+        - addForeignKeyConstraint:
+            baseTableName: review
+            baseColumnNames: book_id
+            constraintName: review_book_id_fkey
+            onDelete: CASCADE
+            referencedTableName: book
+            referencedColumnNames: id

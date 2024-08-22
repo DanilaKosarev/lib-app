@@ -1,0 +1,67 @@
+volumes:
+  library_volume:
+
+services:
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=lib_db
+    volumes:
+      - library_volume:/var/lib/postgresql/data
+    ports:
+      - "5442:5432"
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=2181
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+
+  library:
+    restart: always
+    build: /services/library/.
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - kafka
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/lib_db
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=pass
+      - SPRING_KAFKA_BOOTSTRAP-SERVERS=kafka:9092
+
+  notification_service:
+    restart: always
+    build: /services/notification-service/.
+    depends_on:
+      - library
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/lib_db
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=pass
+      - SPRING_KAFKA_BOOTSTRAP-SERVERS=kafka:9092
+
+  email_sender:
+    restart: always
+    build: /services/email-sender/.
+    depends_on:
+      - notification_service
+    environment:
+      - SPRING_KAFKA_BOOTSTRAP-SERVERS=kafka:9092
+      - SPRING_MAIL_HOST=${HOST}
+      - SPRING_MAIL_PORT=${PORT}
+      - SPRING_MAIL_USERNAME=${EMAIL}
+      - SPRING_MAIL_PASSWORD=${PASSWORD}

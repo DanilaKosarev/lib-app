@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: initial-populate-tables
+      author: Danila
+      changes:
+        - loadData:
+            tableName: book
+            file: db/changelog/data/book-data.csv
+        - loadData:
+            tableName: person
+            file: db/changelog/data/person-data.csv
